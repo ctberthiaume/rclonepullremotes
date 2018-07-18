@@ -3,7 +3,7 @@
 # Copy rclone remotes to local destination. Remotes to copy are listed in a
 # text file, one remote per line, without the trailing ":".
 #
-# 0.1.2
+VERSION=0.1.3
 
 die() {
   printf '%s\n' "$1" >&2
@@ -12,6 +12,7 @@ die() {
 
 show_help() {
   echo "$(basename $0) [-c rclone_config] [-h] remotes_file destination"
+  echo "$VERSION"
 }
 
 remotesfile=
@@ -66,6 +67,7 @@ fi
 remotesfile=$1
 dest=$2
 
+echo "$0 $VERSION"
 while IFS= read -r remote
 do
   if [ -n "$remote" ]; then
