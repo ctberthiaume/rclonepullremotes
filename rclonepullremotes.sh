@@ -3,7 +3,7 @@
 # Copy rclone remotes to local destination. Remotes to copy are listed in a
 # text file, one remote per line, without the trailing ":".
 #
-VERSION=0.1.3
+VERSION=0.1.4
 
 die() {
   printf '%s\n' "$1" >&2
@@ -75,9 +75,9 @@ do
     date
     printf "copying remote %s: to %s\n" "$remote" "$dest"
     if [ -z "$config" ]; then
-      /usr/local/bin/rclone copy -v --drive-acknowledge-abuse "${remote}:" "$dest/${remote}" 2>&1
+      /usr/local/bin/rclone copy -v --stats 30m --drive-acknowledge-abuse "${remote}:" "$dest/${remote}" 2>&1
     else
-      /usr/local/bin/rclone copy -v --drive-acknowledge-abuse --config "$config" "${remote}:" "$dest/${remote}" 2>&1
+      /usr/local/bin/rclone copy -v --stats 30m --drive-acknowledge-abuse --config "$config" "${remote}:" "$dest/${remote}" 2>&1
     fi
   fi
 done < "$remotesfile"
