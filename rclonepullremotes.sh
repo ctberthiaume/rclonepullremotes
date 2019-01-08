@@ -3,7 +3,7 @@
 # Copy rclone remotes to local destination. Remotes to copy are listed in a
 # text file, one remote per line, without the trailing ":".
 #
-VERSION=0.1.6
+VERSION=0.1.7
 
 die() {
   printf '%s\n' "$1" >&2
@@ -19,6 +19,7 @@ remotesfile=
 dest=
 configfile=""
 modifywindow=""
+origargs=("$@")
 
 while :; do
   case $1 in
@@ -92,7 +93,7 @@ fi
 
 echo "-----------------------------------------------------------------------------"
 echo "BEGIN"
-echo "$0 $*"
+echo "$0 ${origargs[@]}"
 echo "version $VERSION"
 date
 echo "-----------------------------------------------------------------------------"
