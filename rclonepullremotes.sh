@@ -3,7 +3,7 @@
 # Copy rclone remotes to local destination. Remotes to copy are listed in a
 # text file, one remote per line, without the trailing ":".
 #
-VERSION=0.1.5
+VERSION=0.1.6
 
 die() {
   printf '%s\n' "$1" >&2
@@ -11,13 +11,14 @@ die() {
 }
 
 show_help() {
-  echo "$(basename $0) [-c rclone_config] [-h] remotes_file destination"
+  echo "$(basename $0) [-c rclone_config] [-m modify-window] [-h] remotes_file destination"
   echo "$VERSION"
 }
 
 remotesfile=
 dest=
-config=
+configfile=""
+modifywindow=""
 
 while :; do
   case $1 in
@@ -27,17 +28,31 @@ while :; do
       ;;
     -c|--config)
       if [ "$2" ]; then
-        config=$2
+        configfile=$2
         shift
       else
         die 'ERROR: "--config" requires a non-empty option argument'
       fi
       ;;
     --config=?*)
-      config=${1#*=} # Delete everything up to "=" and assign the remainder.
+      configfile=${1#*=} # Delete everything up to "=" and assign the remainder.
       ;;
     --config=)         # Handle the case of an empty --config=
       die 'ERROR: "--config" requires a non-empty option argument'
+      ;;
+    -m|--modify-window)
+      if [ "$2" ]; then
+        modifywindow=$2
+        shift
+      else
+        die 'ERROR: "--modify-window" requires a non-empty option argument'
+      fi
+      ;;
+    --modify-window=?*)
+      modifywindow=${1#*=} # Delete everything up to "=" and assign the remainder.
+      ;;
+    --modify-window=)         # Handle the case of an empty --modify-window=
+      die 'ERROR: "--modify-window" requires a non-empty option argument'
       ;;
     --)  # End of all options.
       shift
@@ -67,6 +82,14 @@ fi
 remotesfile=$1
 dest=$2
 
+rcloneargs=(copy -v --stats 30m --drive-acknowledge-abuse)
+if [ -n "$configfile" ]; then
+  rcloneargs+=("--config=$configfile")
+fi
+if [ -n "$modifywindow" ]; then
+  rcloneargs+=("--modify-window=$modifywindow")
+fi
+
 echo "-----------------------------------------------------------------------------"
 echo "BEGIN"
 echo "$0 $*"
@@ -77,11 +100,7 @@ while IFS= read -r remote
 do
   if [ -n "$remote" ]; then
     printf "copying remote %s: to %s\n" "$remote" "$dest"
-    if [ -z "$config" ]; then
-      /usr/local/bin/rclone copy -v --stats 30m --drive-acknowledge-abuse "${remote}:" "$dest/${remote}" 2>&1
-    else
-      /usr/local/bin/rclone copy -v --stats 30m --drive-acknowledge-abuse --config "$config" "${remote}:" "$dest/${remote}" 2>&1
-    fi
+    /usr/local/bin/rclone "${rcloneargs[@]}" "${remote}:" "$dest/${remote}" 2>&1
   fi
 done < "$remotesfile"
 echo "-----------------------------------------------------------------------------"
